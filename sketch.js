@@ -30,8 +30,9 @@ let micPermissionDenied = false;
 const BASE_W = 1365;
 const BASE_H = 768;
 const GROUND_Y = 520;
-const VOICE_LEVEL_THRESHOLD = 0.028;
+const VOICE_LEVEL_THRESHOLD = 0.04;
 const VOICE_PITCH_THRESHOLD = 155;
+const VOICE_CONFIRM_FRAMES = 8;
 const JUMP_COOLDOWN = 260;
 
 function setup() {
@@ -249,11 +250,10 @@ function doJump() {
 }
 
 function maybeQueueVoiceJump() {
-  let dynamicThreshold = max(VOICE_LEVEL_THRESHOLD, ambientLevel * 2.6);
+  let dynamicThreshold = max(VOICE_LEVEL_THRESHOLD, ambientLevel * 3.2);
   let strongVoice = micLevelSmooth > dynamicThreshold;
   let highPitch = pitchSmooth > VOICE_PITCH_THRESHOLD;
   let veryStrongVoice = micLevelSmooth > dynamicThreshold * 1.45;
-  let suddenSpike = micLevelSmooth > ambientLevel + 0.03;
 
   if (strongVoice) {
     voiceCharge = min(8, voiceCharge + 1);
@@ -261,7 +261,7 @@ function maybeQueueVoiceJump() {
     voiceCharge = max(0, voiceCharge - 1.3);
   }
 
-  if ((strongVoice && highPitch) || veryStrongVoice || suddenSpike || voiceCharge >= 4) {
+  if ((strongVoice && highPitch) || (veryStrongVoice && voiceCharge >= VOICE_CONFIRM_FRAMES)) {
     jumpQueued = true;
     voiceCharge = 0;
   }
